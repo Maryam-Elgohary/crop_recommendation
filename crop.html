@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crop Recommendation</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    body {
+        background: url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+        background-size: cover;
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 30px 20px;
+    }
+    .card {
+        border-radius: 20px;
+        background-color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        padding: 25px;
+        max-width: 900px;
+        margin: auto;
+    }
+    .form-label {
+        font-weight: 500;
+    }
+    .feature-icon {
+        margin-right: 6px;
+    }
+    button {
+        background-color: #2e7d32;
+    }
+    button:hover {
+        background-color: #1b5e20;
+    }
+    #result {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h3 class="text-center text-success mb-4">🌱 Crop Recommendation</h3>
+
+    <form id="cropForm">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">🌿 Nitrogen (N)</label>
+                <input type="number" class="form-control" name="N" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">🌿 Phosphorus (P)</label>
+                <input type="number" class="form-control" name="P" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">🌿 Potash (K)</label>
+                <input type="number" class="form-control" name="K" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">🌡️ Temperature (°C)</label>
+                <input type="number" step="0.1" class="form-control" name="temperature" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">💧 Humidity (%)</label>
+                <input type="number" step="0.1" class="form-control" name="humidity" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">🧪 pH</label>
+                <input type="number" step="0.1" class="form-control" name="ph" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">🌦️ Rainfall (mm)</label>
+                <input type="number" step="0.1" class="form-control" name="rainfall" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 mt-4">Predict Crop</button>
+    </form>
+
+    <div id="result" class="alert alert-success text-center mt-4 d-none"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.getElementById("cropForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+
+    data.N = parseInt(data.N);
+    data.P = parseInt(data.P);
+    data.K = parseInt(data.K);
+    data.temperature = parseFloat(data.temperature);
+    data.humidity = parseFloat(data.humidity);
+    data.ph = parseFloat(data.ph);
+    data.rainfall = parseFloat(data.rainfall);
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/predict", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        const resultDiv = document.getElementById("result");
+        resultDiv.classList.remove("d-none", "alert-danger");
+        resultDiv.classList.add("alert-success");
+        resultDiv.innerText = "🌱 Recommended Crop: " + result.recommended_crop;
+
+    } catch (error) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.classList.remove("d-none", "alert-success");
+        resultDiv.classList.add("alert-danger");
+        resultDiv.innerText = "❌ Error: " + error;
+    }
+});
+</script>
+
+</body>
+</html>
